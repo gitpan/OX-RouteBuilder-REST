@@ -1,7 +1,7 @@
 
 
 This archive contains the distribution OX-RouteBuilder-REST,
-version 0.001:
+version 0.002:
 
   OX::RouteBuilder which routes to an action method in a controller class based on HTTP verbs
 

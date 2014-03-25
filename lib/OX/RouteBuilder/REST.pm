@@ -2,7 +2,7 @@ package OX::RouteBuilder::REST;
 use Moose;
 use namespace::autoclean;
 
-our $VERSION=0.001;
+our $VERSION=0.002;
 
 # ABSTRACT: OX::RouteBuilder which routes to an action method in a controller class based on HTTP verbs
 
@@ -105,7 +105,7 @@ OX::RouteBuilder::REST - OX::RouteBuilder which routes to an action method in a 
 
 =head1 VERSION
 
-version 0.001
+version 0.002
 
 =head1 SYNOPSIS
 
