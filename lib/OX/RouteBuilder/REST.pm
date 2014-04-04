@@ -2,7 +2,7 @@ package OX::RouteBuilder::REST;
 use Moose;
 use namespace::autoclean;
 
-our $VERSION=0.002;
+our $VERSION = 0.003;
 
 # ABSTRACT: OX::RouteBuilder which routes to an action method in a controller class based on HTTP verbs
 
@@ -10,62 +10,46 @@ use Try::Tiny;
 
 with 'OX::RouteBuilder';
 
-sub import_DIES_more_than_one_toplevel_router {
-#sub import {
+sub import {
     my $caller = caller;
-    my $meta = Moose::Util::find_meta($caller);
+    my $meta   = Moose::Util::find_meta($caller);
     $meta->add_route_builder('OX::RouteBuilder::REST');
-}
-
-sub import_NOT_WORKING_all_routes_404 {
-#sub import {
-    my $caller = caller;
-    my $meta = Moose::Util::find_meta($caller);
-    $meta->add_route_builder('OX::RouteBuilder::REST');
-    $meta->add_route_builder('OX::RouteBuilder::ControllerAction');
-    $meta->add_route_builder('OX::RouteBuilder::HTTPMethod');
-    $meta->add_route_builder('OX::RouteBuilder::Code');
-
-    $OX::CURRENT_CLASS=$meta;
 }
 
 sub compile_routes {
     my $self = shift;
     my ($app) = @_;
 
-    my $spec = $self->route_spec;
+    my $spec   = $self->route_spec;
     my $params = $self->params;
-    my ($defaults, $validations) = $self->extract_defaults_and_validations($params);
+    my ( $defaults, $validations ) =
+        $self->extract_defaults_and_validations($params);
     $defaults = { %$spec, %$defaults };
 
     my $target = sub {
         my ($req) = @_;
 
         my $match = $req->mapping;
-        my $c = $match->{controller};
-        my $a = $match->{action};
+        my $c     = $match->{controller};
+        my $a     = $match->{action};
 
         my $err;
         my $s = try { $app->fetch($c) } catch { ($err) = split "\n"; undef };
         return [
-            500,
-            [],
-            ["Cannot resolve $c in " . blessed($app) . ": $err"]
-        ] unless $s;
+            500, [], [ "Cannot resolve $c in " . blessed($app) . ": $err" ]
+            ]
+            unless $s;
 
         my $component = $s->get;
-        my $method = uc($req->method);
-        my $action = $a .'_'.$method;
+        my $method    = uc( $req->method );
+        my $action    = $a . '_' . $method;
 
-        if ($component->can($action)) {
+        if ( $component->can($action) ) {
             return $component->$action(@_);
         }
         else {
-            return [
-                500,
-                [],
-                ["Component $component has no method $action"]
-            ];
+            return [ 500, [],
+                ["Component $component has no method $action"] ];
         }
     };
 
@@ -105,7 +89,7 @@ OX::RouteBuilder::REST - OX::RouteBuilder which routes to an action method in a 
 
 =head1 VERSION
 
-version 0.002
+version 0.003
 
 =head1 SYNOPSIS
 
@@ -118,7 +102,7 @@ version 0.002
       isa => 'MyApp::Controller::Thing',
   );
 
-  router [map {'OX::RouteBuilder::'.$_} qw(ControllerAction Code HTTPMethod REST )] => as {
+  router as {
       route '/thing'     => 'REST.thing.root';
       route '/thing/:id' => 'REST.thing.item';
   };
@@ -154,6 +138,9 @@ controller class based on HTTP verbs. It's a bit of a mixture between
 L<OX::RouteBuilder::ControllerAction> and
 L<OX::RouteBuilder::HTTPMethod>.
 
+To enable this RouteBuilder, you need to C<use OX::RouteBuilder::REST>
+in your main application class.
+
 The C<action_spec> should be a string in the form
 C<"REST.$controller.$action">, where C<$controller> is the name of a
 service which provides a controller instance. For each HTTP verb you
@@ -169,17 +156,6 @@ To generate a link to an action, use C<uri_for> with either the name
 (eg C<"REST.$controller.$action">), or by passing a HashRef C<{
     controller => $controller, action => $action }>. See F<t/test.t>
     for some examples.
-
-Please note that due to some constrains how L<OX::RouteBuilder> are
-loaded in C<OX>, you have to manually load all relevant
-C<RouteBuilders> when specifiying the C<routes>:
-
-  router [ map
-           {'OX::RouteBuilder::'.$_}
-           qw(ControllerAction Code HTTPMethod REST )
-         ] => as {
-      route '/thing'     => 'REST.thing.root';
-  };
 
 =for Pod::Coverage import
   compile_routes

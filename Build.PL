@@ -24,7 +24,7 @@ my %module_build_args = (
     "Validad GmbH http://validad.com"
   ],
   "dist_name" => "OX-RouteBuilder-REST",
-  "dist_version" => "0.002",
+  "dist_version" => "0.003",
   "license" => "perl",
   "module_name" => "OX::RouteBuilder::REST",
   "recommends" => {},

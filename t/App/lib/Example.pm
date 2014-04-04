@@ -8,7 +8,7 @@ has thing => (
     isa => 'ExampleController',
 );
 
-router [map {'OX::RouteBuilder::'.$_} qw(REST ControllerAction)] => as {
+router as {
     route '/thing'     => 'REST.thing.root';
     route '/thing/:id' => 'REST.thing.item';
     route '/hase' => 'thing.hase';
